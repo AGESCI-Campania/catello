@@ -141,8 +141,8 @@ DJANGO_TELEGRAMBOT = {
     # NB: if use polling you must provide to run
     # a management command that starts a worker
 
-    'WEBHOOK_SITE': 'https://be1461b6afd4.ngrok.io',
-    'WEBHOOK_PREFIX': '/webhook',  # (Optional[str]) # If this value is specified,
+    'WEBHOOK_SITE': os.getenv("WEBHOOK_URL", "error_token"),
+    'WEBHOOK_PREFIX': '/' + os.getenv("WEBHOOK_PREFIX", "catello"),  # (Optional[str]) # If this value is specified,
     # a prefix is added to webhook url
 
     # 'WEBHOOK_CERTIFICATE' : 'cert.pem', # If your site use self-signed
