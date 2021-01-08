@@ -7,7 +7,7 @@ from catello.settings.base import *
 
 DEBUG = False
 
-ALLOWED_HOSTS.append("avellino1-coca-bot.herokuapp.com")
+ALLOWED_HOSTS.append(os.getenv("HOST", "error_token"))
 
 SECRET_KEY = os.getenv("SECRET_KEY", "error_token")
 
