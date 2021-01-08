@@ -75,10 +75,11 @@ class DataLoader(object):
                         'branca': record.Branca.strip(),
                         'cellulare': cellulare if cellulare is None else str(cellulare).strip(),
                         'email': email if email is None else email.strip(),
-                        'role': 'CA' if (record.CUN == 'G') else 'IS'
                     })
                 if created:
                     nuovi += 1
+                    iscritto.role = 'CA' if (record.CUN == 'G') else 'IS'
+                    iscritto.save(force_update=True)
                 else:
                     aggiornati += 1
 

@@ -16,8 +16,11 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path
 from django.conf.urls import url, include
+from django.views.decorators.csrf import csrf_exempt
+from catello_bot.views import CatelloView
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     url(r'^', include('django_telegrambot.urls')),
+    path('livecheck', csrf_exempt(CatelloView.as_view()))
 ]

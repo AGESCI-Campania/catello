@@ -121,6 +121,6 @@ def check_role(t_user: str, roles: list):
         return False
 
     if user.role in roles:
-        return True & user.active
+        return user.active
     else:
         return False

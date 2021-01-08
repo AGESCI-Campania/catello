@@ -19,6 +19,8 @@ import secrets
 
 import logging
 
+from utils.DataLoader import DataLoader
+
 
 class Conversations(Enum):
     INFO = 1
@@ -56,7 +58,29 @@ def start(update: Update, context: CallbackContext) -> int:
 
 
 def help(update: Update, context: CallbackContext) -> int:
-    update.message.reply_text('Help!')
+    help_text = ""
+    help_text += f"/info \- Ottiene le info di un socio del gruppo, si può cercare per cognome, nome, codice socio, " \
+                 "codice fiscale o unità [L/C, E/G, R/S, Co\.Ca\.] "
+    help_text += f"/socio \- Ottiene le info di un socio del gruppo, si può cercare per cognome, nome, codice socio, " \
+                 "codice fiscale o unità [L/C, E/G, R/S, Co\.Ca\.] "
+    help_text += f"/codice \- Ottiene il codice socio di un socio del gruppo, si può cercare per cognome, nome, " \
+                 "codice socio, codice fiscale o unità [L/C, E/G, R/S, Co\.Ca\.] "
+    help_text += f"/codicesocio \- Ottiene il codice socio di un socio del gruppo, si può cercare per cognome, nome, " \
+                 "codice socio, codice fiscale o unità [L/C, E/G, R/S, Co\.Ca\.] "
+    help_text += f"/generacodice \- Genera il codice di autorizzazione per potersi abilitare all'uso del bot"
+    help_text += f"/inviacodice \- Invia il codice di autorizzazione per potersi abilitare all'uso del bot " \
+                 "all'indirizzo email registrato su Buonastrada, si può cercare per codice socio, codice fiscale "
+    help_text += f"/registrami \- Registra l'account telegram al bot\. *Richiede codice di autorizzazione*"
+    help_text += f"/aggiungiadmin \- Aggiunge un amministratore del bot\. *Solo per amministratori*"
+    help_text += f"/aggiungicapo \- Aggiunge un un capo del gruppo\. *Solo per amministratori*"
+    help_text += f"/rimuoviadmin \- Rimuove un amministratore del bot\. *Solo per amministratori*"
+    help_text += f"/rimuovicapo \- Rimuove un un capo del gruppo\. *Solo per amministratori*"
+    help_text += f"/aggiorna \- Aggiorna la lista soci dal file excel su onedrive\. *Solo per amministratori*"
+    help_text += f"/attiva \- Attiva un iscritto\. *Solo per amministratori*"
+    help_text += f"/disattiva \- Disattiva un iscritto\. *Solo per amministratori*"
+    help_text += f"/abilitati \- Lista abilitati\. *Solo per amministratori*"
+    help_text += f"/help \- Mostra questa lista dei comandi"
+    update.message.reply_markdown_v2(help_text)
     return ConversationHandler.END
 
 
@@ -440,7 +464,6 @@ def rimuovicapo(update: Update, context: CallbackContext) -> int:
                 if iscritto.role == 'SA':
                     update.message.reply_text(f"L'utente {searchstr} è un {iscritto.get_role_display()}. Non puoi modificarlo.")
                     return ConversationHandler.END
-
                 if iscritto.telegram_id == update.message.from_user.id:
                     update.message.reply_text(f"Non puoi cambiare il tuo stesso ruolo!")
                     return ConversationHandler.END
@@ -463,6 +486,62 @@ def rimuovicapo(update: Update, context: CallbackContext) -> int:
         return ConversationHandler.END
 
 
+def aggiorna(update: Update, context: CallbackContext) -> int:
+    if dbmanager.check_admin(update.message.from_user.id):
+        url = settings.SHAREPOINT_URL
+        username = settings.SHAREPOINT_USERNAME
+        password = settings.SHAREPOINT_PASSWORD
+        documents = settings.DOCUMENTS_URL
+        update.message.reply_markdown_v2(
+            Utils.clean_message(f"Sto caricando il file excel. Ti avviso io quando ho finito!"))
+        loader = DataLoader(url, username, password, documents)
+        (nuovi, aggiornati) = loader.load_remote_into_db()
+        update.message.reply_markdown_v2(
+            Utils.clean_message(f"Fatto, ho caricato {nuovi} soci e ne ho aggiornati altri {aggiornati}"))
+    else:
+        update.message.reply_text("Non hai sei autorizzato!")
+
+    return ConversationHandler.END
+
+
+def imposta_status(update: Update, context: CallbackContext) -> int:
+    if dbmanager.check_admin(update.message.from_user.id):
+        regexp = create_regex(
+            r"^(?P<command>/?(dis)?attiva) (?P<searchstr>(?:[0-9]+)|(?:[A-Z]{6}\d{2}[A-Z]\d{2}[A-Z]\d{3}[A-Z]))$")
+        m = regexp.match(update.message.text)
+        if m:
+            command = m.group("command")
+            searchstr = m.group("searchstr")
+            active = not (command.startswith("/dis") | command.startswith("dis"))
+            try:
+                iscritto = dbmanager.get_iscritto_by_codice(searchstr)
+
+                if iscritto.role == 'SA':
+                    update.message.reply_text(
+                        f"L'utente {searchstr} è un {iscritto.get_role_display()}. Non puoi modificarlo.")
+                    return ConversationHandler.END
+
+                if iscritto.telegram_id == update.message.from_user.id:
+                    update.message.reply_text(f"Non puoi modificare le tue abilitazioni!")
+                    return ConversationHandler.END
+
+                iscritto.active = active
+                iscritto.save(force_update=True)
+                nome = Utils.clean_message(f"{iscritto.nome} {iscritto.cognome}")
+                update.message.reply_markdown_v2(f"L'utente *{nome}* è stato *{'' if active else 'dis'}attivato*")
+            except Iscritti.DoesNotExist:
+                update.message.reply_text(f"Non esiste alcun utente con codice {searchstr}")
+            except Iscritti.MultipleObjectsReturned:
+                update.message.reply_text(f"Si è verificato un errore per il codice {searchstr}")
+            finally:
+                return ConversationHandler.END
+        else:
+            update.message.reply_text(f"Non mi hai detto chi chi devo modificare")
+    else:
+        update.message.reply_text("Non hai sei autorizzato!")
+    return ConversationHandler.END
+
+
 def send_error_message(update: Update, context: CallbackContext) -> int:
     exc_type, exc_obj, exc_tb = sys.exc_info()
     fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
@@ -472,7 +551,7 @@ def send_error_message(update: Update, context: CallbackContext) -> int:
 
 
 def error(update: Update, context: CallbackContext) -> int:
-    logger.warning('Update "%s" caused error "%s"' % (update, context.error))
+    logger.error('Update "%s" caused error "%s"' % (update, context.error))
     update.message.reply_text("Ooops si è verificato un errore!")
     return ConversationHandler.END
 
@@ -573,6 +652,15 @@ def main():
     # Handler for rimuovicapo command
     dp.add_handler(MessageHandler(Filters.regex(create_regex(r'^(rimuovi ?capo) .+$')), rimuovicapo))
     dp.add_handler(CommandHandler('rimuovicapo', rimuovicapo))
+
+    # Handler for attiva/disattiva command
+    dp.add_handler(MessageHandler(Filters.regex(create_regex(r'^((dis)?attiva) .+$')), imposta_status))
+    dp.add_handler(CommandHandler('attiva', imposta_status))
+    dp.add_handler(CommandHandler('disattiva', imposta_status))
+
+    # Handler for aggiorna command
+    dp.add_handler(MessageHandler(Filters.regex(create_regex(r'^(aggiorna)$')), aggiorna))
+    dp.add_handler(CommandHandler('aggiorna', aggiorna))
 
     # Handler for unknown command
     dp.add_handler(MessageHandler(Filters.text & ~Filters.command, unknowncommand))
