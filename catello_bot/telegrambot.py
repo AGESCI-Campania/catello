@@ -341,6 +341,8 @@ def registrami(update: Update, context: CallbackContext) -> int:
             update.message.reply_text(f"Non esiste alcun utente con authcode {authcode}")
         except Iscritti.MultipleObjectsReturned:
             update.message.reply_text(f"Si è verificato un errore per l'authcode {authcode}")
+        except Exception:
+            send_error_message(update, context)
         finally:
             return ConversationHandler.END
     else:
