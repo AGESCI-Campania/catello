@@ -325,7 +325,7 @@ def registrami(update: Update, context: CallbackContext) -> int:
             logger.debug("Getting user")
             iscritto = dbmanager.get_iscritto_by_authcode(authcode)
             logger.debug("Got user")
-            if ((iscritto.telegram is None) | iscritto.telegram.strip() == '') & \
+            if ((iscritto.telegram is None) | (iscritto.telegram.strip() == '')) & \
                     ((iscritto.telegram_id is None) | (iscritto.telegram_id.strip() == '')):
                 logger.debug("Valid user")
                 if update.message.from_user.username is None:
