@@ -555,6 +555,7 @@ def send_error_message(update: Update, context: CallbackContext) -> int:
     exc_type, exc_obj, exc_tb = sys.exc_info()
     fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
     logger.error(f'{exc_type}, {fname}, {exc_tb.tb_lineno}')
+    logger.error(str(sys.exc_info()))
     update.message.reply_text("Ooops si è verificato un errore!")
     return ConversationHandler.END
 
