@@ -31,8 +31,11 @@ def bool_to_str(input: bool) -> str:
 
 
 def format_date_field(data: datetime) -> str:
-    locale.setlocale(locale.LC_TIME, "it_IT")
-    return clean_message(data.strftime("%x"))
+    try:
+        locale.setlocale(locale.LC_TIME, "it_IT")
+        return clean_message(data.strftime("%x"))
+    except locale.Error:
+        return clean_message(data.strftime("%d/%m/%Y"))
 
 
 def format_address(iscritto: Iscritti) -> str:
