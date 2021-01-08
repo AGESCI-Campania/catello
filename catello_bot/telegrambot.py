@@ -197,6 +197,7 @@ def iscrittiresponse(update: Update, context: CallbackContext, showall: bool, co
     except Exception:
         exc_type, exc_obj, exc_tb = sys.exc_info()
         fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+        logger.error(str(sys.exc_info()))
         logger.error(f'{exc_type}, {fname}, {exc_tb.tb_lineno}')
         # update.message.reply_text("Ooops, si è verificato un errore :(", reply_markup=ReplyKeyboardRemove())
         answer_error_message(update, context)
