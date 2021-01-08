@@ -322,16 +322,22 @@ def registrami(update: Update, context: CallbackContext) -> int:
         res = list(filter(None, regexp.split(inputstr)))
         authcode = res[1]
         try:
+            logger.debug("Getting user")
             iscritto = dbmanager.get_iscritto_by_authcode(authcode)
+            logger.debug("Got user")
             if ((iscritto.telegram is None) | iscritto.telegram.strip() == '') & \
                     ((iscritto.telegram_id is None) | (iscritto.telegram_id.strip() == '')):
+                logger.debug("Valid user")
                 if update.message.from_user.username is None:
                     username = f"User{update.message.from_user.id}"
                 else:
                     username = update.message.from_user.username
+
+                logger.debug("Prepared username")
                 iscritto.telegram_id = update.message.from_user.id
                 iscritto.telegram = username
                 iscritto.save(force_update="True")
+                logger.debug("Saved user")
                 update.message.reply_text(f"Sei stato registrato correttamente! Ora comincia a chiedermi informazioni")
                 return ConversationHandler.END
             else:
