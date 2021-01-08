@@ -561,6 +561,7 @@ def send_error_message(update: Update, context: CallbackContext) -> int:
 
 
 def error(update: Update, context: CallbackContext) -> int:
+    logger.error(str(sys.exc_info()))
     logger.error('Update "%s" caused error "%s"' % (update, context.error))
     update.message.reply_text("Ooops si è verificato un errore!")
     return ConversationHandler.END
