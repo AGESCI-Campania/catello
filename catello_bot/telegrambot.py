@@ -217,9 +217,11 @@ def start_generacodice(update: Update, context: CallbackContext) -> int:
                                   "il codice fiscale del\la capo per ui generare il codice.",
                                   reply_markup=ReplyKeyboardMarkup(reply_keyboard, one_time_keyboard=True),
                                   )
+        logger.debug(f"return: {GENERACODICE}")
         return GENERACODICE
     else:
         update.message.reply_text('Non sei autorizzato!')
+        logger.debug(f"return: {ConversationHandler.END}")
         return ConversationHandler.END
 
 
