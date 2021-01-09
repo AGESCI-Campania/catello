@@ -211,6 +211,7 @@ def iscrittiresponse(update: Update, context: CallbackContext, showall: bool, co
 
 def start_generacodice(update: Update, context: CallbackContext) -> int:
     if dbmanager.check_admin(update.message.from_user.id):
+        logger.debug("start_generacodice")
         reply_keyboard = [['Nuovi', 'Tutti'], ['Annulla']]
         update.message.reply_text("Bene, per chi devo generare i codici, scegli una opzione o scrivi il codice socio o "
                                   "il codice fiscale del\la capo per ui generare il codice.",
@@ -219,12 +220,13 @@ def start_generacodice(update: Update, context: CallbackContext) -> int:
         return GENERACODICE
     else:
         update.message.reply_text('Non sei autorizzato!')
-
-    return ConversationHandler.END
+        return ConversationHandler.END
 
 
 def generacodice(update: Update, context: CallbackContext) -> int:
+    logger.debug("generacodice")
     command = update.message.text.lower()
+    logger.debug(f"Command sent: {command}")
     if command == 'tutti':
         iscritti = Iscritti.objects.filter(
             Q(coca=True)
@@ -239,13 +241,17 @@ def generacodice(update: Update, context: CallbackContext) -> int:
             Q(coca=True)
         )
 
+    logger.debug(f"iscritti {iscritti.count()}")
+
     for iscritto in iscritti:
         authcode = secrets.token_urlsafe(6)
         iscritto.authcode = authcode
         iscritto.save(force_update=True)
         nome = Utils.clean_message(f"{iscritto.nome} {iscritto.cognome}")
+        logger.debug(f"Authcode generato per {nome}: {authcode}")
         authcode = Utils.clean_message(authcode)
         update.message.reply_markdown_v2(f"Authcode generato per *{nome}*: *_{authcode}_*")
+
     return ConversationHandler.END
 
 

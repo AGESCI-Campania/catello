@@ -4,7 +4,6 @@ from django.core.management import BaseCommand
 from django.db.models import Q
 
 from catello_bot.models import Iscritti
-from utils import Utils
 
 
 class Command(BaseCommand):
@@ -17,6 +16,6 @@ class Command(BaseCommand):
             authcode = secrets.token_urlsafe(6)
             iscritto.authcode = authcode
             iscritto.save(force_update=True)
-            nome = Utils.clean_message(f"{iscritto.nome} {iscritto.cognome}")
-            authcode = Utils.clean_message(authcode)
+            nome = f"{iscritto.nome} {iscritto.cognome}"
+            authcode = authcode
             print(f"Authcode generato per {nome}: {authcode}")
