@@ -318,7 +318,7 @@ def invia_codice(update: Update, context: CallbackContext) -> int:
 
 def registrami(update: Update, context: CallbackContext) -> int:
     inputstr = update.message.text
-    regexp = create_regex(r"/(registrami|abilitami) ([A-Za-z0-9\-_ \.~]+)")
+    regexp = create_regex(r"/?(registrami|abilitami) ([A-Za-z0-9\-_ \.~]+)")
     if regexp.match(inputstr):
         res = list(filter(None, regexp.split(inputstr)))
         authcode = res[1]
