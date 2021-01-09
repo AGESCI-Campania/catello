@@ -245,6 +245,7 @@ def generacodice(update: Update, context: CallbackContext) -> int:
 
     logger.debug(f"iscritti {iscritti.count()}")
 
+    counter = 0
     for iscritto in iscritti:
         authcode = secrets.token_urlsafe(6)
         iscritto.authcode = authcode
@@ -252,7 +253,11 @@ def generacodice(update: Update, context: CallbackContext) -> int:
         nome = Utils.clean_message(f"{iscritto.nome} {iscritto.cognome}")
         logger.debug(f"Authcode generato per {nome}: {authcode}")
         authcode = Utils.clean_message(authcode)
-        update.message.reply_markdown_v2(f"Authcode generato per *{nome}*: *_{authcode}_*")
+        update.message.reply_markdown_v2(f"Authcode generato per *{nome}*: *_{authcode}_*", reply_markup=ReplyKeyboardRemove())
+        counter += 1
+
+    update.message.reply_markdown_v2(f"Ho generato gli authcode per *{counter}* soci",
+                                     reply_markup=ReplyKeyboardRemove())
 
     return ConversationHandler.END
 
