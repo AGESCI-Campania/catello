@@ -251,4 +251,4 @@ catello/db.sqlite3
 test.py
 set_environment.sh
 set_environment.prod.sh
-
+set_environment.staging.sh
