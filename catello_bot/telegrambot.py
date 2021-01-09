@@ -211,20 +211,24 @@ def iscrittiresponse(update: Update, context: CallbackContext, showall: bool, co
 
 def start_generacodice(update: Update, context: CallbackContext) -> int:
     if dbmanager.check_admin(update.message.from_user.id):
+        logger.debug("start_generacodice")
         reply_keyboard = [['Nuovi', 'Tutti'], ['Annulla']]
         update.message.reply_text("Bene, per chi devo generare i codici, scegli una opzione o scrivi il codice socio o "
                                   "il codice fiscale del\la capo per ui generare il codice.",
                                   reply_markup=ReplyKeyboardMarkup(reply_keyboard, one_time_keyboard=True),
                                   )
+        logger.debug(f"return: {GENERACODICE}")
         return GENERACODICE
     else:
         update.message.reply_text('Non sei autorizzato!')
-
-    return ConversationHandler.END
+        logger.debug(f"return: {ConversationHandler.END}")
+        return ConversationHandler.END
 
 
 def generacodice(update: Update, context: CallbackContext) -> int:
+    logger.debug("generacodice")
     command = update.message.text.lower()
+    logger.debug(f"Command sent: {command}")
     if command == 'tutti':
         iscritti = Iscritti.objects.filter(
             Q(coca=True)
@@ -239,13 +243,22 @@ def generacodice(update: Update, context: CallbackContext) -> int:
             Q(coca=True)
         )
 
+    logger.debug(f"iscritti {iscritti.count()}")
+
+    counter = 0
     for iscritto in iscritti:
         authcode = secrets.token_urlsafe(6)
         iscritto.authcode = authcode
         iscritto.save(force_update=True)
         nome = Utils.clean_message(f"{iscritto.nome} {iscritto.cognome}")
+        logger.debug(f"Authcode generato per {nome}: {authcode}")
         authcode = Utils.clean_message(authcode)
-        update.message.reply_markdown_v2(f"Authcode generato per *{nome}*: *_{authcode}_*")
+        update.message.reply_markdown_v2(f"Authcode generato per *{nome}*: *_{authcode}_*", reply_markup=ReplyKeyboardRemove())
+        counter += 1
+
+    update.message.reply_markdown_v2(f"Ho generato gli authcode per *{counter}* soci",
+                                     reply_markup=ReplyKeyboardRemove())
+
     return ConversationHandler.END
 
 
@@ -318,7 +331,7 @@ def invia_codice(update: Update, context: CallbackContext) -> int:
 
 def registrami(update: Update, context: CallbackContext) -> int:
     inputstr = update.message.text
-    regexp = create_regex(r"/(registrami|abilitami) ([A-Za-z0-9\-_ \.~]+)")
+    regexp = create_regex(r"/?(registrami|abilitami) ([A-Za-z0-9\-_ \.~]+)")
     if regexp.match(inputstr):
         res = list(filter(None, regexp.split(inputstr)))
         authcode = res[1]
@@ -326,8 +339,8 @@ def registrami(update: Update, context: CallbackContext) -> int:
             logger.debug("Getting user")
             iscritto = dbmanager.get_iscritto_by_authcode(authcode)
             logger.debug("Got user")
-            if ((iscritto.telegram is None) | (iscritto.telegram.strip() == '')) & \
-                    ((iscritto.telegram_id is None) | (iscritto.telegram_id.strip() == '')):
+            if ((iscritto.telegram is None) | (iscritto.telegram == '')) & \
+                    ((iscritto.telegram_id is None) | (iscritto.telegram_id == '')):
                 logger.debug("Valid user")
                 if update.message.from_user.username is None:
                     username = f"User{update.message.from_user.id}"
