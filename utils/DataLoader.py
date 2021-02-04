@@ -71,7 +71,7 @@ class DataLoader(object):
                         'cap': str(record.Cap).strip(),
                         'informativa2a': (record.Informativa2a == 'Si'),
                         'informativa2b': (record.Informativa2b == 'Si'),
-                        'consenso_immagini': (record.ConsensoImmagini == 'Si'),
+                        'consenso_immagini': (record['Informativa 2c'] == 'Si'),
                         'livello_foca': record.LivelloFoCa.strip(),
                         'coca': (record.CUN == 'G'),
                         'branca': record.Branca.strip(),
