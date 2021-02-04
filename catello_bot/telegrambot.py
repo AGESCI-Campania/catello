@@ -16,6 +16,7 @@ import os
 import sys
 import re
 import secrets
+import time
 
 import logging
 
@@ -38,6 +39,10 @@ INFOSELECTDETAIL, INFOONLYACTIVE, INFOFULL, CONVERSATIONEND = range(CONVERSATION
 CODICESELECTDETAIL, CODICEONLYACTIVE, CODICEFULL, CONVERSATIONEND = range(CONVERSATIONEND, 4 + CONVERSATIONEND)
 GENERACODICE, CONVERSATIONEND = range(CONVERSATIONEND, 2 + CONVERSATIONEND)
 INVIACODICE, CONVERSATIONEND = range(CONVERSATIONEND, 2 + CONVERSATIONEND)
+
+
+def response_timer_delay():
+    pass
 
 
 def create_regex(regexstr: str) -> re:
@@ -94,6 +99,7 @@ def unknowncommand(update: Update, context: CallbackContext) -> int:
 def startinfo(update: Update, context: CallbackContext) -> int:
     reply_keyboard = [['Tutti'], ['Censiti'], ['annulla']]
     if dbmanager.check_user(update.message.from_user.id):
+        response_timer_delay()
         update.message.reply_text(
             "Vuoi visualizzare tutti o solo soci (censiti nell'anno)?",
             reply_markup=ReplyKeyboardMarkup(reply_keyboard, one_time_keyboard=True)
@@ -119,6 +125,7 @@ def selectdetaillevel(update: Update, context: CallbackContext, conv: Conversati
         answer_error_message(update, context)
         return ConversationHandler.END
 
+    response_timer_delay()
     reply_keyboard = [['Branca L/C', 'Branca E/G'], ['Branca R/S', 'Co.Ca.'], ['Tutti', 'annulla']]
     user_choice = update.message.text
     if user_choice == 'Tutti':
@@ -211,6 +218,7 @@ def iscrittiresponse(update: Update, context: CallbackContext, showall: bool, co
 
 def start_generacodice(update: Update, context: CallbackContext) -> int:
     if dbmanager.check_admin(update.message.from_user.id):
+        response_timer_delay()
         logger.debug("start_generacodice")
         reply_keyboard = [['Nuovi', 'Tutti'], ['Annulla']]
         update.message.reply_text("Bene, per chi devo generare i codici, scegli una opzione o scrivi il codice socio o "
