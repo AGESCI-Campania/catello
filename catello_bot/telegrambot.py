@@ -526,9 +526,9 @@ def aggiorna(update: Update, context: CallbackContext) -> int:
         update.message.reply_markdown_v2(
             Utils.clean_message(f"Sto caricando il file excel. Ti avviso io quando ho finito!"))
         loader = DataLoader(url, username, password, documents)
-        (nuovi, aggiornati) = loader.load_remote_into_db()
+        (nuovi, aggiornati, disabilitati) = loader.load_remote_into_db(disable_old=True)
         update.message.reply_markdown_v2(
-            Utils.clean_message(f"Fatto, ho caricato {nuovi} soci e ne ho aggiornati altri {aggiornati}"))
+            Utils.clean_message(f"Fatto, ho caricato {nuovi} soci e ne ho aggiornati altri {aggiornati}. {disabilitati} soci hanno lasciato il gruppo"))
     else:
         update.message.reply_text("Non hai sei autorizzato!")
 

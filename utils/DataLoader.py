@@ -43,11 +43,13 @@ class DataLoader(object):
                 df['DataDiNascita'] = pd.to_datetime(df.DataNascita).dt.strftime('%Y-%m-%d')
                 return df
 
-    def load_remote_into_db(self) -> (int, int):
+    def load_remote_into_db(self, disable_old=False) -> (int, int, int):
         df = self.load_remote_to_dataframe()
         records = df.to_records()
         nuovi = 0
         aggiornati = 0
+        disabilitati = 0
+        iscritti = []
         with transaction.atomic():
             for record in records:
                 cellulare = None if str(record.Cellulare) == 'nan' else record.Cellulare
@@ -76,11 +78,19 @@ class DataLoader(object):
                         'cellulare': cellulare if cellulare is None else str(cellulare).strip(),
                         'email': email if email is None else email.strip(),
                     })
+                iscritto.active = True
                 if created:
                     nuovi += 1
                     iscritto.role = 'CA' if (record.CUN == 'G') else 'IS'
                     iscritto.save(force_update=True)
                 else:
                     aggiornati += 1
+                iscritti.append(iscritto.id)
+            if disable_old:
+                to_disable = Iscritti.objects.exclude(id__in=iscritti)
+                for iscritto in to_disable:
+                    iscritto.active = False
+                    iscritto.save(force_update=True)
+                    disabilitati += 1
 
-        return nuovi, aggiornati
+        return nuovi, aggiornati, disabilitati
