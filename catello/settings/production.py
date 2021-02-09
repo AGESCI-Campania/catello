@@ -1,9 +1,7 @@
+import os
 from catello.settings.base import *
 
 ALLOWED_HOSTS = ["*"]
-
-import os
-from catello.settings.base import *
 
 DEBUG = False
 
