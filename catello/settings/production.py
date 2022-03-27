@@ -1,14 +1,11 @@
 from catello.settings.base import *
 
-ALLOWED_HOSTS = ["*"]
-
 import os
 from catello.settings.base import *
 
 DEBUG = False
 
-ALLOWED_HOSTS.append(os.getenv("HOST", "error_token"))
-
+ALLOWED_HOSTS = ["*", os.getenv("HOST", "error_token")]
 SECRET_KEY = os.getenv("SECRET_KEY", "error_token")
 
 DATABASES = {

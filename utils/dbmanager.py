@@ -11,33 +11,28 @@ logger = logging.getLogger(__name__)
 
 def get_iscritti(search_string: str, show_only_active: bool = False, show_all: bool = False) -> QuerySet:
     if show_all:
-        if show_only_active:
-            iscritti_set = Iscritti.objects.filter(
+        return Iscritti.objects.filter(
                 Q(active=True)
-            )
-        else:
-            iscritti_set = Iscritti.objects.all()
-        return iscritti_set
-    else:
+            ) if show_only_active else Iscritti.objects.all()
+    iscritti_set = Iscritti.objects.filter(
+        Q(cognome__icontains=search_string) |
+        Q(nome__icontains=search_string) |
+        Q(codice_socio__icontains=search_string) |
+        Q(codice_fiscale__icontains=search_string) |
+        Q(branca__icontains=search_string)
+    )
+
+    if show_only_active:
         iscritti_set = Iscritti.objects.filter(
             Q(cognome__icontains=search_string) |
             Q(nome__icontains=search_string) |
             Q(codice_socio__icontains=search_string) |
             Q(codice_fiscale__icontains=search_string) |
             Q(branca__icontains=search_string)
+        ).filter(
+            Q(active=True)
         )
-
-        if show_only_active:
-            iscritti_set = Iscritti.objects.filter(
-                Q(cognome__icontains=search_string) |
-                Q(nome__icontains=search_string) |
-                Q(codice_socio__icontains=search_string) |
-                Q(codice_fiscale__icontains=search_string) |
-                Q(branca__icontains=search_string)
-            ).filter(
-                Q(active=True)
-            )
-        return iscritti_set.order_by('cognome', 'nome')
+    return iscritti_set.order_by('cognome', 'nome')
 
 
 def get_iscritto_by_codice(search_string: str, show_only_active: bool = False) -> Iscritti:
@@ -56,8 +51,7 @@ def get_iscritto_by_codice(search_string: str, show_only_active: bool = False) -
 
 def get_iscritto_by_telegram(t_user: str) -> QuerySet:
     return Iscritti.objects.filter(
-        Q(telegram_id__iexact=str(t_user)) |
-        Q(telegram__iexact=str(t_user))
+        (Q(telegram_id__iexact=t_user) | Q(telegram__iexact=t_user))
     )
 
 
@@ -111,7 +105,7 @@ def check_role(t_user: str, roles: list):
     if t_user is None:
         return False
     try:
-        t_user = str(t_user)
+        t_user = t_user
         user: Iscritti = Iscritti.objects.get(telegram_id__iexact=t_user)
     except Iscritti.DoesNotExist:
         return False
@@ -120,7 +114,4 @@ def check_role(t_user: str, roles: list):
     except:
         return False
 
-    if user.role in roles:
-        return user.active
-    else:
-        return False
+    return user.active if user.role in roles else False
