@@ -47,39 +47,49 @@ def create_regex(regexstr: str) -> re:
 # Define a few command handlers. These usually take the two arguments bot and
 # update. Error handlers also receive the raised TelegramError object in error.
 def start(update: Update, context: CallbackContext) -> int:
-    update.message.reply_markdown_v2(f"Benvenuto sul bot della *Comunità Capi AGESCI Avellino 1*\n"
-                                     f"Se sei un membro di questa Comunità Capi usa il codice ricevuto "
-                                     f"per email per registrarti\!\n"
-                                     f"Se non lo hai ricevuto, chiedimi _\"invia codice\"_ seguito dal tuo codice socio "
-                                     f"o codice fiscale e riceverai il codice di autorizzazioni e le istruzioni"
-                                     f"per usarlo sulla tua mail\.",
-                                     reply_markup=ReplyKeyboardRemove())
+    update.message.reply_markdown_v2(
+        "Benvenuto sul bot della *Comunità Capi AGESCI Avellino 1*\\n",
+        reply_markup=ReplyKeyboardRemove(),
+    )
+
     return ConversationHandler.END
 
 
 def help(update: Update, context: CallbackContext) -> int:
-    help_text = ""
-    help_text += f"/info \- Ottiene le info di un socio del gruppo, si può cercare per cognome, nome, codice socio, " \
-                 "codice fiscale o unità [L/C, E/G, R/S, Co\.Ca\.] "
-    help_text += f"/socio \- Ottiene le info di un socio del gruppo, si può cercare per cognome, nome, codice socio, " \
-                 "codice fiscale o unità [L/C, E/G, R/S, Co\.Ca\.] "
-    help_text += f"/codice \- Ottiene il codice socio di un socio del gruppo, si può cercare per cognome, nome, " \
-                 "codice socio, codice fiscale o unità [L/C, E/G, R/S, Co\.Ca\.] "
-    help_text += f"/codicesocio \- Ottiene il codice socio di un socio del gruppo, si può cercare per cognome, nome, " \
-                 "codice socio, codice fiscale o unità [L/C, E/G, R/S, Co\.Ca\.] "
-    help_text += f"/generacodice \- Genera il codice di autorizzazione per potersi abilitare all'uso del bot"
-    help_text += f"/inviacodice \- Invia il codice di autorizzazione per potersi abilitare all'uso del bot " \
-                 "all'indirizzo email registrato su Buonastrada, si può cercare per codice socio, codice fiscale "
-    help_text += f"/registrami \- Registra l'account telegram al bot\. *Richiede codice di autorizzazione*"
-    help_text += f"/aggiungiadmin \- Aggiunge un amministratore del bot\. *Solo per amministratori*"
-    help_text += f"/aggiungicapo \- Aggiunge un un capo del gruppo\. *Solo per amministratori*"
-    help_text += f"/rimuoviadmin \- Rimuove un amministratore del bot\. *Solo per amministratori*"
-    help_text += f"/rimuovicapo \- Rimuove un un capo del gruppo\. *Solo per amministratori*"
-    help_text += f"/aggiorna \- Aggiorna la lista soci dal file excel su onedrive\. *Solo per amministratori*"
-    help_text += f"/attiva \- Attiva un iscritto\. *Solo per amministratori*"
-    help_text += f"/disattiva \- Disattiva un iscritto\. *Solo per amministratori*"
-    help_text += f"/abilitati \- Lista abilitati\. *Solo per amministratori*"
-    help_text += f"/help \- Mostra questa lista dei comandi"
+    help_text = (
+        ""
+        + "/info \\- Ottiene le info di un socio del gruppo, si può cercare per cognome, nome, codice socio, "
+    )
+
+    help_text += "/socio \\- Ottiene le info di un socio del gruppo, si può cercare per cognome, nome, codice socio, "
+
+    help_text += "/codice \\- Ottiene il codice socio di un socio del gruppo, si può cercare per cognome, nome, "
+
+    help_text += "/codicesocio \\- Ottiene il codice socio di un socio del gruppo, si può cercare per cognome, nome, "
+
+    help_text += "/generacodice \\- Genera il codice di autorizzazione per potersi abilitare all'uso del bot"
+
+    help_text += "/inviacodice \\- Invia il codice di autorizzazione per potersi abilitare all'uso del bot "
+
+    help_text += "/registrami \\- Registra l'account telegram al bot\\. *Richiede codice di autorizzazione*"
+
+    help_text += "/aggiungiadmin \\- Aggiunge un amministratore del bot\\. *Solo per amministratori*"
+
+    help_text += "/aggiungicapo \\- Aggiunge un un capo del gruppo\\. *Solo per amministratori*"
+
+    help_text += "/rimuoviadmin \\- Rimuove un amministratore del bot\\. *Solo per amministratori*"
+
+    help_text += "/rimuovicapo \\- Rimuove un un capo del gruppo\\. *Solo per amministratori*"
+
+    help_text += "/aggiorna \\- Aggiorna la lista soci dal file excel su onedrive\\. *Solo per amministratori*"
+
+    help_text += "/attiva \\- Attiva un iscritto\\. *Solo per amministratori*"
+    help_text += (
+        "/disattiva \\- Disattiva un iscritto\\. *Solo per amministratori*"
+    )
+
+    help_text += "/abilitati \\- Lista abilitati\\. *Solo per amministratori*"
+    help_text += "/help \\- Mostra questa lista dei comandi"
     update.message.reply_markdown_v2(help_text)
     return ConversationHandler.END
 
@@ -92,8 +102,8 @@ def unknowncommand(update: Update, context: CallbackContext) -> int:
 
 
 def startinfo(update: Update, context: CallbackContext) -> int:
-    reply_keyboard = [['Tutti'], ['Censiti'], ['annulla']]
     if dbmanager.check_user(update.message.from_user.id):
+        reply_keyboard = [['Tutti'], ['Censiti'], ['annulla']]
         update.message.reply_text(
             "Vuoi visualizzare tutti o solo soci (censiti nell'anno)?",
             reply_markup=ReplyKeyboardMarkup(reply_keyboard, one_time_keyboard=True)
@@ -115,7 +125,7 @@ def codiceselectdetaillevel(update: Update, context: CallbackContext) -> int:
 
 
 def selectdetaillevel(update: Update, context: CallbackContext, conv: Conversations) -> int:
-    if not (conv in [Conversations.INFO, Conversations.CODICE]):
+    if conv not in [Conversations.INFO, Conversations.CODICE]:
         answer_error_message(update, context)
         return ConversationHandler.END
 
@@ -318,9 +328,11 @@ def invia_codice(update: Update, context: CallbackContext) -> int:
             iscritto.save(force_update="True")
 
         Utils.send_authcode_email(iscritto)
-        update.message.reply_text(f"Il codice di autorizzazione è stato inviato all'indirizzo mail registrato "
-                                  f"su BuonaStrada!",
-                                  reply_markup=ReplyKeyboardRemove())
+        update.message.reply_text(
+            "Il codice di autorizzazione è stato inviato all'indirizzo mail registrato ",
+            reply_markup=ReplyKeyboardRemove(),
+        )
+
     except Iscritti.DoesNotExist:
         update.message.reply_text(f"Non ho trovato un iscritto che risponde a {update.message.text}")
     except Iscritti.MultipleObjectsReturned:
@@ -352,11 +364,13 @@ def registrami(update: Update, context: CallbackContext) -> int:
                 iscritto.telegram = username
                 iscritto.save(force_update="True")
                 logger.debug("Saved user")
-                update.message.reply_text(f"Sei stato registrato correttamente! Ora comincia a chiedermi informazioni")
-                return ConversationHandler.END
+                update.message.reply_text(
+                    "Sei stato registrato correttamente! Ora comincia a chiedermi informazioni"
+                )
+
             else:
-                update.message.reply_text(f"Questo utente ha già un telegram associato")
-                return ConversationHandler.END
+                update.message.reply_text("Questo utente ha già un telegram associato")
+            return ConversationHandler.END
         except Iscritti.DoesNotExist:
             update.message.reply_text(f"Non esiste alcun utente con authcode {authcode}")
         except Iscritti.MultipleObjectsReturned:
@@ -374,8 +388,7 @@ def aggiungiadmin(update: Update, context: CallbackContext) -> int:
     if dbmanager.check_super_admin(update.message.from_user.id):
         regexp = create_regex(
             r"^(?P<command>/?aggiungi ?admin) (?P<searchstr>(?:[0-9]+)|(?:[A-Z]{6}\d{2}[A-Z]\d{2}[A-Z]\d{3}[A-Z]))$")
-        m = regexp.match(update.message.text)
-        if m:
+        if m := regexp.match(update.message.text):
             searchstr = m.group("searchstr")
             try:
                 iscritto = dbmanager.get_iscritto_by_codice(searchstr)
@@ -384,7 +397,7 @@ def aggiungiadmin(update: Update, context: CallbackContext) -> int:
                     return ConversationHandler.END
 
                 if iscritto.telegram_id == update.message.from_user.id:
-                    update.message.reply_text(f"Non puoi cambiare il tuo stesso ruolo!")
+                    update.message.reply_text("Non puoi cambiare il tuo stesso ruolo!")
                     return ConversationHandler.END
 
                 iscritto.role = 'AD'
@@ -398,7 +411,7 @@ def aggiungiadmin(update: Update, context: CallbackContext) -> int:
             finally:
                 return ConversationHandler.END
         else:
-            update.message.reply_text(f"Non mi hai detto chi nominare amministratore")
+            update.message.reply_text("Non mi hai detto chi nominare amministratore")
             return ConversationHandler.END
     else:
         update.message.reply_text("Non hai sei autorizzato!")
@@ -409,8 +422,7 @@ def aggiungicapo(update: Update, context: CallbackContext) -> int:
     if dbmanager.check_admin(update.message.from_user.id):
         regexp = create_regex(
             r"^(?P<command>/?aggiungi ?capo) (?P<searchstr>(?:[0-9]+)|(?:[A-Z]{6}\d{2}[A-Z]\d{2}[A-Z]\d{3}[A-Z]))$")
-        m = regexp.match(update.message.text)
-        if m:
+        if m := regexp.match(update.message.text):
             searchstr = m.group("searchstr")
             try:
                 iscritto = dbmanager.get_iscritto_by_codice(searchstr)
@@ -419,7 +431,7 @@ def aggiungicapo(update: Update, context: CallbackContext) -> int:
                     return ConversationHandler.END
 
                 if iscritto.telegram_id == update.message.from_user.id:
-                    update.message.reply_text(f"Non puoi cambiare il tuo stesso ruolo!")
+                    update.message.reply_text("Non puoi cambiare il tuo stesso ruolo!")
                     return ConversationHandler.END
 
                 iscritto.role = 'CA'
@@ -433,7 +445,7 @@ def aggiungicapo(update: Update, context: CallbackContext) -> int:
             finally:
                 return ConversationHandler.END
         else:
-            update.message.reply_text(f"Non mi hai detto chi inserire nella Co.Ca.")
+            update.message.reply_text("Non mi hai detto chi inserire nella Co.Ca.")
             return ConversationHandler.END
     else:
         update.message.reply_text("Non hai sei autorizzato!")
@@ -444,8 +456,7 @@ def rimuoviadmin(update: Update, context: CallbackContext) -> int:
     if dbmanager.check_super_admin(update.message.from_user.id):
         regexp = create_regex(
             r"^(?P<command>/?rimuovi ?admin) (?P<searchstr>(?:[0-9]+)|(?:[A-Z]{6}\d{2}[A-Z]\d{2}[A-Z]\d{3}[A-Z]))$")
-        m = regexp.match(update.message.text)
-        if m:
+        if m := regexp.match(update.message.text):
             searchstr = m.group("searchstr")
             try:
                 iscritto = dbmanager.get_iscritto_by_codice(searchstr)
@@ -454,7 +465,7 @@ def rimuoviadmin(update: Update, context: CallbackContext) -> int:
                     return ConversationHandler.END
 
                 if iscritto.telegram_id == update.message.from_user.id:
-                    update.message.reply_text(f"Non puoi cambiare il tuo stesso ruolo!")
+                    update.message.reply_text("Non puoi cambiare il tuo stesso ruolo!")
                     return ConversationHandler.END
 
                 iscritto.role = 'IS'
@@ -468,7 +479,7 @@ def rimuoviadmin(update: Update, context: CallbackContext) -> int:
             finally:
                 return ConversationHandler.END
         else:
-            update.message.reply_text(f"Non mi hai detto chi eliminare da amministratore")
+            update.message.reply_text("Non mi hai detto chi eliminare da amministratore")
             return ConversationHandler.END
     else:
         update.message.reply_text("Non hai sei autorizzato!")
@@ -479,8 +490,7 @@ def rimuovicapo(update: Update, context: CallbackContext) -> int:
     if dbmanager.check_admin(update.message.from_user.id):
         regexp = create_regex(
             r"^(?P<command>/?rimuovi ?capo) (?P<searchstr>(?:[0-9]+)|(?:[A-Z]{6}\d{2}[A-Z]\d{2}[A-Z]\d{3}[A-Z]))$")
-        m = regexp.match(update.message.text)
-        if m:
+        if m := regexp.match(update.message.text):
             searchstr = m.group("searchstr")
             try:
                 iscritto = dbmanager.get_iscritto_by_codice(searchstr)
@@ -488,7 +498,7 @@ def rimuovicapo(update: Update, context: CallbackContext) -> int:
                     update.message.reply_text(f"L'utente {searchstr} è un {iscritto.get_role_display()}. Non puoi modificarlo.")
                     return ConversationHandler.END
                 if iscritto.telegram_id == update.message.from_user.id:
-                    update.message.reply_text(f"Non puoi cambiare il tuo stesso ruolo!")
+                    update.message.reply_text("Non puoi cambiare il tuo stesso ruolo!")
                     return ConversationHandler.END
 
                 iscritto.role = 'IS'
@@ -502,7 +512,7 @@ def rimuovicapo(update: Update, context: CallbackContext) -> int:
             finally:
                 return ConversationHandler.END
         else:
-            update.message.reply_text(f"Non mi hai detto chi eliminare dalla Co.Ca.")
+            update.message.reply_text("Non mi hai detto chi eliminare dalla Co.Ca.")
             return ConversationHandler.END
     else:
         update.message.reply_text("Non hai sei autorizzato!")
@@ -516,7 +526,11 @@ def aggiorna(update: Update, context: CallbackContext) -> int:
         password = settings.SHAREPOINT_PASSWORD
         documents = settings.DOCUMENTS_URL
         update.message.reply_markdown_v2(
-            Utils.clean_message(f"Sto caricando il file excel. Ti avviso io quando ho finito!"))
+            Utils.clean_message(
+                "Sto caricando il file excel. Ti avviso io quando ho finito!"
+            )
+        )
+
         loader = DataLoader(url, username, password, documents)
         (nuovi, aggiornati) = loader.load_remote_into_db()
         update.message.reply_markdown_v2(
@@ -531,8 +545,7 @@ def imposta_status(update: Update, context: CallbackContext) -> int:
     if dbmanager.check_admin(update.message.from_user.id):
         regexp = create_regex(
             r"^(?P<command>/?(dis)?attiva) (?P<searchstr>(?:[0-9]+)|(?:[A-Z]{6}\d{2}[A-Z]\d{2}[A-Z]\d{3}[A-Z]))$")
-        m = regexp.match(update.message.text)
-        if m:
+        if m := regexp.match(update.message.text):
             command = m.group("command")
             searchstr = m.group("searchstr")
             active = not (command.startswith("/dis") | command.startswith("dis"))
@@ -545,7 +558,7 @@ def imposta_status(update: Update, context: CallbackContext) -> int:
                     return ConversationHandler.END
 
                 if iscritto.telegram_id == update.message.from_user.id:
-                    update.message.reply_text(f"Non puoi modificare le tue abilitazioni!")
+                    update.message.reply_text("Non puoi modificare le tue abilitazioni!")
                     return ConversationHandler.END
 
                 iscritto.active = active
@@ -559,7 +572,7 @@ def imposta_status(update: Update, context: CallbackContext) -> int:
             finally:
                 return ConversationHandler.END
         else:
-            update.message.reply_text(f"Non mi hai detto chi chi devo modificare")
+            update.message.reply_text("Non mi hai detto chi chi devo modificare")
     else:
         update.message.reply_text("Non hai sei autorizzato!")
     return ConversationHandler.END
